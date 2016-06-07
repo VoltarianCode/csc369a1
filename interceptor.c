@@ -369,13 +369,14 @@ static int init_function(void) {
 
 	printk(KERN_INFO "The Number of Syscalls: %d", NR_syscalls);
 	
-	spin_lock(&calltable_spinlock);
+	spin_lock(&calltable_lock);
+	int i = 0;
 
-	for (int i = 0; i < NR_syscalls; i++){
-		printk(KERN_INFO "value[%d]: %d", i, *(sys_call_table[i]));
+	while  (i < NR_syscalls){
+		printk(KERN_INFO "value[%d]: %p", i, *(sys_call_table[i]));
 	}
 
-	spin_unlock(&calltable_spinlock);
+	spin_unlock(&calltable_lock);
 
 	
 
