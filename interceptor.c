@@ -373,7 +373,7 @@ static int init_function(void) {
 	int i = 0;
 
 	while  (i < NR_syscalls){
-		printk(KERN_INFO "value[%d]: %p", i, *(sys_call_table[i]));
+		printk(KERN_INFO "value[%d]: %p", i, sys_call_table[i]);
 	}
 
 	spin_unlock(&calltable_lock);
