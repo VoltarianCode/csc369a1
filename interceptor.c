@@ -367,7 +367,8 @@ long (*orig_custom_syscall)(void);
 static int init_function(void) {
 
 
-
+	printk(KERN_INFO "The Number of Syscalls: %d", NR_syscalls);
+	
 
 
 
