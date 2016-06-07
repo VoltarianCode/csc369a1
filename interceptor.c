@@ -367,18 +367,20 @@ long (*orig_custom_syscall)(void);
 static int init_function(void) {
 
 
+
+
+	int i = 0;
 	printk(KERN_INFO "The Number of Syscalls: %d", NR_syscalls);
 	
 	spin_lock(&calltable_lock);
-	int i = 0;
+
 
 	while  (i < NR_syscalls){
 		printk(KERN_INFO "value[%d]: %p", i, sys_call_table[i]);
+		i++;
 	}
 
 	spin_unlock(&calltable_lock);
-
-	
 
 
 
