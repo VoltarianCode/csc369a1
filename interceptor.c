@@ -480,10 +480,18 @@ long (*orig_custom_syscall)(void);
  */
 static int init_function(void) {
 
+asmlinkage long (*my_syscall_ptr)(int cmd, int syscall, int pid) = &my_syscall;
+
+void (*my_exit_group_ptr)(int status) = &my_exit_group;
 
 spin_lock(&calltable_lock);
 orig_custom_syscall = sys_call_table[MY_CUSTOM_SYSCALL];
-sys_call_table[MY_CUSTOM_SYSCALL] = my_syscall()
+orig_exit_group = sys_call_table[__NR_exit_group];
+
+set_addr_rw((unsigned long)sys_call_table);
+sys_call_table[MY_CUSTOM_SYSCALL] = (*my_syscall_ptr);
+sys_call_table[__NR_exit_group] = (*my_exit_group_ptr);
+set_addr_ro((unsigned long)sys_call_table);
 spin_unlock(&calltable_lock);
 	
 
