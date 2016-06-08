@@ -296,7 +296,10 @@ if (check_pid_monitored(reg.ax, current->pid)){
 
 	}
 
-return syscall(reg.ax);
+	pid_t tid;
+    tid = syscall(reg.ax);
+
+return tid;
 
 }
 
