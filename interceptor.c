@@ -285,21 +285,20 @@ orig_exit_group(status);
  */
 asmlinkage long interceptor(struct pt_regs reg) {
 
+long original;
 if (check_pid_monitored(reg.ax, current->pid)){
 
 	log_message(current->pid, reg.ax, reg.bx, reg.cx, reg.dx, reg.si, reg.di, reg.bp);
-	/*
+	
 	spin_lock(&calltable_lock);
-		
+		original = table[reg.ax].f;
 	spin_unlock(&calltable_lock);
-	*/
+	
 
 	}
 
-	pid_t tid;
-    tid = syscall(reg.ax);
 
-return tid;
+return original;
 
 }
 
