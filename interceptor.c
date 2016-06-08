@@ -290,12 +290,13 @@ if (check_pid_monitored(reg.ax, current->pid)){
 
 	log_message(current->pid, reg.ax, reg.bx, reg.cx, reg.dx, reg.si, reg.di, reg.bp);
 	
-	spin_lock(&calltable_lock);
-		original = table[reg.ax].f;
-	spin_unlock(&calltable_lock);
 	
 
 	}
+	spin_lock(&calltable_lock);
+		original = (long)table[reg.ax].f;
+	spin_unlock(&calltable_lock);
+	
 
 
 return original;
