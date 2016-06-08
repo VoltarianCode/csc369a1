@@ -285,7 +285,7 @@ orig_exit_group(status);
  */
 asmlinkage long interceptor(struct pt_regs reg) {
 
-long original;
+
 if (check_pid_monitored(reg.ax, current->pid)){
 
 	log_message(current->pid, reg.ax, reg.bx, reg.cx, reg.dx, reg.si, reg.di, reg.bp);
@@ -293,10 +293,9 @@ if (check_pid_monitored(reg.ax, current->pid)){
 	
 
 	}
-	original = (long)table[reg.ax].f;
 	
 
-return original;
+return (long) table[reg.ax].f(reg);
 
 }
 
@@ -415,15 +414,17 @@ if (cmd == REQUEST_START_MONITORING) {
 }
 
 
-
 if (cmd == REQUEST_SYSCALL_INTERCEPT){
 	
 	table[syscall].f = sys_call_table[syscall];
 	table[syscall].intercepted = 1;
 
+	asmlinkage long (*intercept)(struct pt_regs reg) = &interceptor;
+
 	spin_lock(&calltable_lock);
 	set_addr_rw((unsigned long)sys_call_table);
-	sys_call_table[syscall] = interceptor((table[syscall])->f);
+	sys_call_table[syscall] = (*intercept);
+	set_addr_ro((unsigned long)sys_call_table);
 	spin_unlock(&calltable_lock);
 	return 0;
 
@@ -432,6 +433,7 @@ if (cmd == REQUEST_SYSCALL_INTERCEPT){
 	spin_lock(&calltable_lock);
 	set_addr_rw((unsigned long)sys_call_table);
 	sys_call_table[syscall] = table[syscall].f;
+	set_addr_ro((unsigned long)sys_call_table);
 	spin_unlock(&calltable_lock);
 	return 0;
 } else if (cmd == REQUEST_START_MONITORING) {
@@ -478,6 +480,12 @@ long (*orig_custom_syscall)(void);
  */
 static int init_function(void) {
 
+
+spin_lock(&calltable_lock);
+orig_custom_syscall = sys_call_table[MY_CUSTOM_SYSCALL];
+sys_call_table[MY_CUSTOM_SYSCALL] = my_syscall()
+spin_unlock(&calltable_lock);
+	
 
 
 
