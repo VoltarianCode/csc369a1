@@ -253,6 +253,14 @@ void my_exit_group(int status)
 {
 
 
+spin_lock(&pidlist_lock);
+
+del_pid(current->pid);
+
+spin_unlock(&pidlist_lock);
+
+orig_exit_group(status);
+
 
 }
 //----------------------------------------------------------------
@@ -277,11 +285,19 @@ void my_exit_group(int status)
  */
 asmlinkage long interceptor(struct pt_regs reg) {
 
+if (check_pid_monitored(reg.ax, current->pid)){
 
+	log_message(current->pid, reg.ax, reg.bx, reg.cx, reg.dx, reg.si, reg.di, reg.bp);
+	/*
+	spin_lock(&calltable_lock);
+		
+	spin_unlock(&calltable_lock);
+	*/
 
+	}
 
+return syscall(reg.ax);
 
-	return 0; // Just a placeholder, so it compiles with no warnings!
 }
 
 /**
@@ -335,7 +351,15 @@ asmlinkage long interceptor(struct pt_regs reg) {
  */
 asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 
+if (syscall < 0 || syscall > NR_syscalls || (syscall == MY_CUSTOM_SYSCALL)) {
+	return -EINVAL; 
+}
 
+/*
+if () {
+
+}
+*/
 
 
 
@@ -369,6 +393,8 @@ static int init_function(void) {
 
 
 
+/*
+
 	int i = 0;
 	printk(KERN_INFO "The Number of Syscalls: %d", NR_syscalls);
 	
@@ -383,7 +409,7 @@ static int init_function(void) {
 	spin_unlock(&calltable_lock);
 
 
-
+*/
 
 
 	return 0;
