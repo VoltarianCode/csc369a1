@@ -423,7 +423,7 @@ if (cmd == REQUEST_SYSCALL_INTERCEPT){
 
 	spin_lock(&calltable_lock);
 	set_addr_rw((unsigned long)sys_call_table);
-	sys_call_table[syscall] = interceptor(table[syscall]->f);
+	sys_call_table[syscall] = interceptor((table[syscall])->f);
 	spin_unlock(&calltable_lock);
 	return 0;
 
