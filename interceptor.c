@@ -293,11 +293,8 @@ if (check_pid_monitored(reg.ax, current->pid)){
 	
 
 	}
-	spin_lock(&calltable_lock);
-		original = (long)table[reg.ax].f;
-	spin_unlock(&calltable_lock);
+	original = (long)table[reg.ax].f;
 	
-
 
 return original;
 
@@ -358,9 +355,7 @@ int ownership;
 int interception;
 int monitored;
 
-spin_lock(&calltable_lock);
 interception = table[syscall].intercepted;
-spin_unlock(&calltable_lock);
 
 ownership = check_pid_from_list(pid, current->pid);
 
@@ -419,14 +414,40 @@ if (cmd == REQUEST_START_MONITORING) {
 	}
 }
 
-if ((add_pid_sysc((pid_t) pid, syscall)) != 0) {
+
+
+if (cmd == REQUEST_SYSCALL_INTERCEPT){
+	
+	table[syscall].f = sys_call_table[syscall];
+	table[syscall].intercepted = 1;
+
+	spin_lock(&calltable_lock);
+	set_addr_rw((unsigned long)sys_call_table);
+	sys_call_table[syscall] = interceptor(table[syscall].f);
+	spin_unlock(&calltable_lock);
+	return 0;
+
+} else if (cmd == REQUEST_SYSCALL_RELEASE) {
+	table[syscall].intercepted = 0;
+	spin_lock(&calltable_lock);
+	set_addr_rw((unsigned long)sys_call_table);
+	sys_call_table[syscall] = table[syscall].f;
+	spin_unlock(&calltable_lock);
+	return 0;
+} else if (cmd == REQUEST_START_MONITORING) {
+	if ((add_pid_sysc((pid_t) pid, syscall)) != 0) {
 	return -ENOMEM;
 }
-/*
-if () {
+	if(pid != 0){
+		table[syscall].monitored = 1;
+	} else {
+		table[syscall].monitored = 2;
+	}
+	//static int add_pid_sysc(pid_t pid, int sysc)
+
+} else if (cmd == REQUEST_STOP_MONITORING) {
 
 }
-*/
 
 
 
