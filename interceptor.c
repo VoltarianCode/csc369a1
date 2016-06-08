@@ -354,10 +354,74 @@ return original;
  */
 asmlinkage long my_syscall(int cmd, int syscall, int pid) {
 
+int ownership;
+int interception;
+int monitored;
+
+spin_lock(&calltable_lock);
+interception = table[syscall].intercepted;
+spin_unlock(&calltable_lock);
+
+ownership = check_pid_from_list(pid, current->pid);
+
+monitored = check_pid_monitored(syscall, (pid_t) pid);
+
 if (syscall < 0 || syscall > NR_syscalls || (syscall == MY_CUSTOM_SYSCALL)) {
 	return -EINVAL; 
 }
 
+if (cmd == REQUEST_START_MONITORING || cmd == REQUEST_STOP_MONITORING){
+
+	if (pid < 0 || (pid != 0 && pid_task(find_vpid(pid), PIDTYPE_PID) != NULL)) {
+		return -EINVAL;
+	}
+
+	if (current_uid().val != 0){
+
+		if (ownership != 0){
+			return -EPERM;
+		}
+		if (pid == 0){
+			return -EPERM;
+		}
+	}
+}
+
+if (cmd == REQUEST_SYSCALL_INTERCEPT || cmd == REQUEST_SYSCALL_RELEASE){
+		if (current_uid().val != 0){
+			return -EPERM;
+		}
+	}
+
+if (cmd == REQUEST_SYSCALL_RELEASE || cmd == REQUEST_STOP_MONITORING) {
+	
+	if (!interception){
+		return -EINVAL;
+	} else {
+		if (!monitored){
+			return -EINVAL;
+		}
+	}
+	
+}
+
+
+if (cmd == REQUEST_SYSCALL_INTERCEPT){
+	
+	if (interception){
+		return -EBUSY;
+	}
+}
+
+if (cmd == REQUEST_START_MONITORING) {
+	if (monitored){
+		return -EBUSY;
+	}
+}
+
+if ((add_pid_sysc((pid_t) pid, syscall)) != 0) {
+	return -ENOMEM;
+}
 /*
 if () {
 
