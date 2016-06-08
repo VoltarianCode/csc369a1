@@ -354,6 +354,9 @@ int ownership;
 int interception;
 int monitored;
 
+asmlinkage long (*intercept)(struct pt_regs reg) = &interceptor;
+
+
 interception = table[syscall].intercepted;
 
 ownership = check_pid_from_list(pid, current->pid);
@@ -419,7 +422,6 @@ if (cmd == REQUEST_SYSCALL_INTERCEPT){
 	table[syscall].f = sys_call_table[syscall];
 	table[syscall].intercepted = 1;
 
-	asmlinkage long (*intercept)(struct pt_regs reg) = &interceptor;
 
 	spin_lock(&calltable_lock);
 	set_addr_rw((unsigned long)sys_call_table);
