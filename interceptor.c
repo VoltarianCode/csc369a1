@@ -376,7 +376,7 @@ if (cmd == REQUEST_START_MONITORING || cmd == REQUEST_STOP_MONITORING){
 		return -EINVAL;
 	}
 
-	if (current_uid().val != 0){
+	if (current_uid() != 0){
 
 		if (ownership != 0){
 			return -EPERM;
@@ -388,7 +388,7 @@ if (cmd == REQUEST_START_MONITORING || cmd == REQUEST_STOP_MONITORING){
 }
 
 if (cmd == REQUEST_SYSCALL_INTERCEPT || cmd == REQUEST_SYSCALL_RELEASE){
-		if (current_uid().val != 0){
+		if (current_uid() != 0){
 			return -EPERM;
 		}
 	}
